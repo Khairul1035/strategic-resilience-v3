@@ -7,9 +7,12 @@ import matplotlib.pyplot as plt
 from streamlit_autorefresh import st_autorefresh
 import datetime
 
-# 1. LIVE PULSE & UI CONFIG
-st_autorefresh(interval=30000, key="warroom_pulse") # Refresh every 30s
-st.set_page_config(page_title="SSO v5.0 | Strategic Resilience", layout="wide", page_icon="🕵️‍♂️")
+# 1. LIVE SYSTEM PULSE (Auto-refresh every 30s)
+st_autorefresh(interval=30000, key="warroom_pulse")
+st.set_page_config(page_title="SSO v5.1 | Strategic Resilience", layout="wide", page_icon="🕵️‍♂️")
+
+# GLOBAL TICKERS DEFINITION (Fixed Scope)
+tickers_map = {'MOS': 'Fertilizer', 'WEAT': 'Wheat_Index', 'TSM': 'AI_Hardware', 'PFE': 'Pharma_Proxy', '^VIX': 'Market_Fear'}
 
 # CUSTOM CSS FOR CORPORATE LOOK
 st.markdown("""
@@ -33,10 +36,8 @@ with st.sidebar:
 # 3. DATA ENGINE: REAL-TIME INTRADAY FETCH
 @st.cache_data(ttl=30)
 def fetch_war_room_data():
-    # Tickers: MOS (Agri), WEAT (Food), TSM (Tech), PFE (Pharma), ^VIX (Fear)
-    tickers = {'MOS': 'Fertilizer', 'WEAT': 'Wheat_Index', 'TSM': 'AI_Hardware', 'PFE': 'Pharma_Proxy', '^VIX': 'Market_Fear'}
-    data = yf.download(list(tickers.keys()), period="5d", interval="15m")['Close']
-    data.rename(columns=tickers, inplace=True)
+    data = yf.download(list(tickers_map.keys()), period="5d", interval="15m")['Close']
+    data.rename(columns=tickers_map, inplace=True)
     return data
 
 try:
@@ -46,11 +47,13 @@ try:
     prev = df.iloc[-2]
     
     # 4. KPI SECTION: LIVE MARKET HEARTBEAT
-    st.title("🌐 Strategic Resilience Observatory v5.0")
+    st.title("🌐 Strategic Resilience Observatory v5.1")
     cols = st.columns(5)
-    for i, col in enumerate(tickers.values()):
-        change = ((latest[col] - prev[col]) / prev[col]) * 100
-        cols[i].metric(label=col.replace("_", " "), value=f"{latest[col]:.2f}", delta=f"{change:.2f}%")
+    
+    # Use global tickers_map for labels
+    for i, col_name in enumerate(tickers_map.values()):
+        change = ((latest[col_name] - prev[col_name]) / prev[col_name]) * 100
+        cols[i].metric(label=col_name.replace("_", " "), value=f"{latest[col_name]:.2f}", delta=f"{change:.2f}%")
 
     st.write("---")
 
@@ -67,7 +70,6 @@ try:
 
     with col_ahmad:
         st.subheader("🤖 Ahmad's Synthesis")
-        # EXPERT LOGIC: Ahmad's Brain v5.0
         ahmad_notes = []
         if latest['Fertilizer'] > df['Fertilizer'].mean():
             ahmad_notes.append("• **Input Volatility:** Non-linear surge in Fertilizer costs suggests strategic stockpiling by regional actors.")
@@ -94,10 +96,6 @@ try:
         Current data integration shows a persistent divergence between the **Pharma Proxy** and **Market Fear**. From a Financial Criminology perspective, 
         the stability of the Pharma sector during a rise in Market Fear indicates a 'Hedging of Risk' by corporate entities who anticipate a 
         prolonged structural shift rather than a short-term crisis. 
-        
-        **Business Management Interpretation:**
-        Organizational Behavior across the detected nodes suggests a transition toward 'Resource Sovereignty'. Institutions are prioritizing 
-        internal resilience over global cooperation, which explains the decoupling in the **Fertilizer-Wheat** correlation.
         """)
 
     with tabs[1]:
@@ -105,7 +103,6 @@ try:
         ### **Ahmad's 90-Day Projection:**
         1. **Probability of Managed Crisis (85%):** Indicators suggest a 'Controlled Escalation' where narratives will intensify, but economic fundamentals will remain buffered by state-led interventions.
         2. **Tech-Hegemony Shift:** AI Hardware (TSM) is expected to maintain its bull-run, reinforcing the move toward asymmetric warfare dominance.
-        3. **Food Security Warning:** If the Fertilizer-Wheat correlation does not normalize within 14 days, expect 'Social Unrest Signals' to emerge in secondary regions.
         """)
 
     with tabs[2]:
@@ -118,4 +115,4 @@ except Exception as e:
     st.error(f"Intelligence Sync Error: {e}")
 
 st.write("---")
-st.caption(f"© 2024 SSO v5.0. PI: MOHD KHAIRUL RIDHUAN BIN MOHD FADZIL. Co-Researcher: Ahmad AI.")
+st.caption(f"© 2024 SSO v5.1. PI: MOHD KHAIRUL RIDHUAN BIN MOHD FADZIL. Co-Researcher: Ahmad AI.")
