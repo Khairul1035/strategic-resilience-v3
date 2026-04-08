@@ -9,22 +9,24 @@ import datetime
 
 # 1. LIVE SYSTEM PULSE (Auto-refresh every 30s)
 st_autorefresh(interval=30000, key="warroom_pulse")
-st.set_page_config(page_title="SSO v5.1 | Strategic Resilience", layout="wide", page_icon="🕵️‍♂️")
+st.set_page_config(page_title="SSO v5.2 | Strategic Resilience", layout="wide", page_icon="🕵️‍♂️")
 
-# GLOBAL TICKERS DEFINITION (Fixed Scope)
+# GLOBAL TICKERS DEFINITION
 tickers_map = {'MOS': 'Fertilizer', 'WEAT': 'Wheat_Index', 'TSM': 'AI_Hardware', 'PFE': 'Pharma_Proxy', '^VIX': 'Market_Fear'}
 
-# CUSTOM CSS FOR CORPORATE LOOK
+# CUSTOM CSS FOR HIGH VISIBILITY & CORPORATE LOOK
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .stMetric { background-color: #161b22; padding: 15px; border-radius: 10px; border: 1px solid #30363d; }
+    /* Memastikan label dan nilai metrik berwarna putih terang */
+    [data-testid="stMetricLabel"] { color: #00d1b2 !important; font-weight: bold !important; font-size: 16px !important; }
+    [data-testid="stMetricValue"] { color: #ffffff !important; }
+    .stMetric { background-color: #1c2128; padding: 20px; border-radius: 12px; border: 1px solid #30363d; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
     .stAlert { border-radius: 10px; }
-    div[data-testid="stExpander"] { border: none; background-color: #161b22; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. SIDEBAR: PI PROFILE & SYSTEM CONTROL
+# 2. SIDEBAR: PI PROFILE
 with st.sidebar:
     st.markdown(f"### 👨‍💼 Principal Investigator\n**MOHD KHAIRUL RIDHUAN BIN MOHD FADZIL**")
     st.caption("Expertise: Financial Criminology | Maqasid Sharia | Organizational Strategy")
@@ -38,6 +40,8 @@ with st.sidebar:
 def fetch_war_room_data():
     data = yf.download(list(tickers_map.keys()), period="5d", interval="15m")['Close']
     data.rename(columns=tickers_map, inplace=True)
+    # CLEANING DATA: Buang baris yang ada 'nan' untuk elakkan ralat visual
+    data = data.ffill().dropna()
     return data
 
 try:
@@ -47,13 +51,15 @@ try:
     prev = df.iloc[-2]
     
     # 4. KPI SECTION: LIVE MARKET HEARTBEAT
-    st.title("🌐 Strategic Resilience Observatory v5.1")
+    st.title("🌐 Strategic Resilience Observatory v5.2")
+    st.write("---")
     cols = st.columns(5)
     
-    # Use global tickers_map for labels
     for i, col_name in enumerate(tickers_map.values()):
-        change = ((latest[col_name] - prev[col_name]) / prev[col_name]) * 100
-        cols[i].metric(label=col_name.replace("_", " "), value=f"{latest[col_name]:.2f}", delta=f"{change:.2f}%")
+        val = latest[col_name]
+        p_val = prev[col_name]
+        change = ((val - p_val) / p_val) * 100
+        cols[i].metric(label=col_name.replace("_", " "), value=f"{val:.2f}", delta=f"{change:.2f}%")
 
     st.write("---")
 
@@ -72,42 +78,45 @@ try:
         st.subheader("🤖 Ahmad's Synthesis")
         ahmad_notes = []
         if latest['Fertilizer'] > df['Fertilizer'].mean():
-            ahmad_notes.append("• **Input Volatility:** Non-linear surge in Fertilizer costs suggests strategic stockpiling by regional actors.")
+            ahmad_notes.append("• **Input Volatility:** Non-linear surge in Fertilizer costs suggests strategic stockpiling.")
         if norm_df['AI_Hardware'].iloc[-1] > 0.8:
             ahmad_notes.append("• **Tech Supremacy:** High-intensity AI hardware signals indicate institutional front-running.")
-        if df.corr().loc['Fertilizer', 'Wheat_Index'] < 0.3:
-            ahmad_notes.append("• **Ethical Anomaly:** Decoupling detected between Fertilizer and Wheat. Potential violation of Maqasid Sharia's Hifz al-Nafs.")
+        
+        # Expert Logic Decoupling
+        if df.corr().loc['Fertilizer', 'Wheat_Index'] < 0.4:
+            ahmad_notes.append("• **Ethical Anomaly:** Decoupling detected. Potential violation of Maqasid Sharia protocols.")
 
         st.markdown(f"""
-        <div style="background-color:#161b22; padding:20px; border-radius:10px; border-left: 5px solid #00d1b2;">
+        <div style="background-color:#1c2128; padding:20px; border-radius:10px; border: 1px solid #00d1b2; color: #ffffff;">
+        <strong style="color:#00d1b2;">Ahmad's Expert Briefing:</strong><br><br>
         {'<br><br>'.join(ahmad_notes) if ahmad_notes else "Baseline equilibrium maintained."}
+        <br><br>
+        <small>Methodology: Financial Criminology & Resource Resilience</small>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("---")
 
     # 6. RIGOROUS ANALYSIS & PROJECTION SECTION
-    st.subheader("🔍 Rigorous Analytical Discussion & Projections")
     tabs = st.tabs(["Strategic Discussion", "What's Next? (Projection)", "Decoupling Matrix"])
 
     with tabs[0]:
         st.markdown(f"""
         **Analytical Context:**
-        Current data integration shows a persistent divergence between the **Pharma Proxy** and **Market Fear**. From a Financial Criminology perspective, 
-        the stability of the Pharma sector during a rise in Market Fear indicates a 'Hedging of Risk' by corporate entities who anticipate a 
-        prolonged structural shift rather than a short-term crisis. 
+        Current data integration shows a persistent divergence in the **Pharma Proxy**. From a Financial Criminology perspective, 
+        the stability of the Pharma sector during high volatility indicates a 'Hedging of Risk' by corporate entities.
         """)
 
     with tabs[1]:
-        st.markdown(f"""
+        st.markdown("""
         ### **Ahmad's 90-Day Projection:**
-        1. **Probability of Managed Crisis (85%):** Indicators suggest a 'Controlled Escalation' where narratives will intensify, but economic fundamentals will remain buffered by state-led interventions.
-        2. **Tech-Hegemony Shift:** AI Hardware (TSM) is expected to maintain its bull-run, reinforcing the move toward asymmetric warfare dominance.
+        - **Probability of Managed Crisis (85%):** Indicators suggest 'Controlled Escalation'.
+        - **Tech-Hegemony:** AI Hardware (TSM) expected to maintain growth.
         """)
 
     with tabs[2]:
         fig_heat, ax = plt.subplots(figsize=(10, 5), facecolor='#0e1117')
-        sns.heatmap(df.corr(), annot=True, cmap='RdYlGn', center=0, ax=ax)
+        sns.heatmap(df.corr(), annot=True, cmap='RdYlGn', center=0, ax=ax, annot_kws={"color": "black"})
         plt.title("Institutional Integrity Matrix", color='white')
         st.pyplot(fig_heat)
 
@@ -115,4 +124,4 @@ except Exception as e:
     st.error(f"Intelligence Sync Error: {e}")
 
 st.write("---")
-st.caption(f"© 2024 SSO v5.1. PI: MOHD KHAIRUL RIDHUAN BIN MOHD FADZIL. Co-Researcher: Ahmad AI.")
+st.caption(f"© 2024 SSO v5.2. PI: MOHD KHAIRUL RIDHUAN BIN MOHD FADZIL. Co-Researcher: Ahmad AI.")
